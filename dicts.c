@@ -28,8 +28,7 @@ Fifth Floor, Boston, MA  02110-1301, USA.
 // DICTIONARY
 
 #include <wchar.h>
-#include <pcre.h>
-#include <glib.h>   // required for string conversion functions
+#include <limits.h> // ULLONG_MAX; previously pulled in transitively via glib.h
 
 #include <dlfcn.h>
 #include <iconv.h>
@@ -127,14 +126,18 @@ static int memblkl=0;
 
 // Add a new dictionary word with UTF-8 citation form s0, ISO-8859-1 form s1,
 // dictionary number dn, score f. Return 1 if added, 0 if not, -2 for out of memory
-static int adddictword(char*s0,char*s1,int dn,pcre*sre,pcre*are,float f) {
+// NOTE (headless build patch): sre/are were PCRE regexes for dictionary source/answer
+// filters (dsfilters/dafilters), a GUI-only feature. This build never constructs them
+// (loaddicts() always calls adddictword() with NULL,NULL), so the filter parameters are
+// kept only for interface compatibility and PCRE has been dropped as a dependency.
+static int adddictword(char*s0,char*s1,int dn,void*sre,void*are,float f) {
   int c,i,l0,l1;
   unsigned char m;
   struct memblk*q;
-  int pcreov[120];
 
 // printf("adddictword(\"%s\",\"%s\")\n",s0,s1);
   l0=strlen(s0);
+  (void)l0;
   for(i=l1=0;s1[i];i++) {
     m=s1[i];
     c=chmap[m];
@@ -145,16 +148,7 @@ static int adddictword(char*s0,char*s1,int dn,pcre*sre,pcre*are,float f) {
   s1[l1]=0; // terminate: now have untreated light form in s1
   if(l1==0) return 0; // empty: skip
   if(l1>MXLE) return 0; // too long: skip
-  if(sre) {
-    i=pcre_exec(sre,0,s0,l0,0,0,pcreov,120);
-    DEB1 if(i<-1) printf("PCRE error %d\n",i);
-    if(i<0) return 0; // failed match
-    }
-  if(are) {
-    i=pcre_exec(are,0,s1,l1,0,0,pcreov,120);
-    DEB1 if(i<-1) printf("PCRE error %d\n",i);
-    if(i<0) return 0; // failed match
-    }
+  if(sre||are) return 0; // dictionary filters unsupported in this headless build
 
   if(memblkp==NULL||memblkl+2+l0+1+l1+1>MEMBLK) { // allocate more memory if needed (this always happens on first pass round loop)
     q=(struct memblk*)malloc(sizeof(struct memblk));

@@ -23,9 +23,12 @@
 
 all:: fill
 
-CFLAGS := -g -Wall -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security `pkg-config --cflags glib-2.0` `pkg-config --cflags gtk+-2.0` -I/opt/local/include
-LFLAGS := -Wl,-Bsymbolic-functions -Wl,-z,relro -L/opt/local/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -lm -lcairo -lgobject-2.0 -lpcre -lglib-2.0 -pthread -lgthread-2.0
-# -lrt as well?
+# Headless build (see ../qxw-cli-headless-build.md): filler.c/dicts.c/fill.c have no
+# live GTK/glib/cairo/pcre/pthread symbol references (verified by grep), so this build
+# drops those deps entirely instead of installing GTK2/PCRE1, which are unavailable on
+# modern distros. Only libm (math) and libdl (plug-in dlopen) are actually linked.
+CFLAGS := -g -Wall -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security
+LFLAGS := -Wl,-Bsymbolic-functions -Wl,-z,relro -lm
 ifneq ($(filter deb,$(MAKECMDGOALS)),)
   CFLAGS:= $(CFLAGS) -g
 else

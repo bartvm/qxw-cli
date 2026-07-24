@@ -106,8 +106,16 @@ struct sprop { // square properties
   char mk[MAXNMK][MXMK+1]; // square corner mark strings in each direction
   };
 
-// entry methods
+// entry methods (values from upstream Qxw 20140331 common.h; this fork's extraction
+// had dropped everything but EM_FWD, which left bldstructs()/dicts.c's other entry-method
+// references undefined)
 #define EM_FWD 1
+#define EM_REV 2
+#define EM_CYC 4
+#define EM_RCY 8
+#define EM_JUM 16
+#define EM_ALL 31
+#define EM_SPR 32 // for internal use only
 
 struct lprop { // light properties
   unsigned int dmask; // mask of allowed dictionaries; special values 1<<MAXNDICTS and above for "implicit" words

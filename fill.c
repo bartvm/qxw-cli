@@ -1170,8 +1170,10 @@ ew0:
 
 
 	a_filenew(0); // reset grid
-	nd = 1;
-	strcpy(dfnames[0], "all_dict");
+	// NOTE (headless build patch): this used to unconditionally overwrite dfnames[0]
+	// with the literal string "all_dict", discarding whatever -d arguments getopt()
+	// had just parsed above. dfnames[] is scanned directly by loaddicts(), so nd is
+	// otherwise unused here.
 	loaddicts(0);
 
 	read_grid(stdin);

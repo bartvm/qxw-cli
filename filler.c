@@ -43,12 +43,11 @@ Fifth Floor, Boston, MA  02110-1301, USA.
    getposs();
    */
 
-#include <glib.h>
-#include <gdk/gdk.h>
 #include "common.h"
 #include "filler.h"
 #include "dicts.h"
 #include <stdbool.h>
+#include <float.h> // DBL_MAX; previously pulled in transitively via glib.h
 
 // 0 = stopped, 1 = filling all, 2 = filling selection, 3 = word lists only (for preexport)
 static int fillmode;
